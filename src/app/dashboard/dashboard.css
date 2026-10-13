@@ -1,0 +1,4 @@
+/* Styles for the dashboard live in the global styles.css (shared design tokens + animations). */
+:host {
+  display: block;
+}
