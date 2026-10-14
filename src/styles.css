@@ -16,7 +16,7 @@ html {
 body {
   margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a2238;
+  background: #0c101a;
   color: #f8fafc;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -35,8 +35,8 @@ h1, h2, h3, .font-heading {
 }
 
 ::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #1a2238; }
-::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+::-webkit-scrollbar-track { background: #0c101a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #34d399; }
 
 /* ------------------------------------------------------------------ */
@@ -44,31 +44,31 @@ h1, h2, h3, .font-heading {
 /* ------------------------------------------------------------------ */
 .bg-scene {
   background:
-    radial-gradient(ellipse at 12% 8%, hsl(var(--h) 70% 40% / 0.95), transparent 58%),
-    radial-gradient(ellipse at 90% 92%, hsl(calc(var(--h) + 55) 70% 38% / 0.95), transparent 58%),
-    hsl(var(--h) 42% 19%);
+    radial-gradient(ellipse at 15% 10%, hsl(var(--h) 50% 18% / 0.8), transparent 60%),
+    radial-gradient(ellipse at 88% 90%, hsl(calc(var(--h) + 45) 50% 16% / 0.8), transparent 60%),
+    hsl(var(--h) 30% 9%);
   overflow: hidden;
 }
 
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.55;
+  filter: blur(100px);
+  opacity: 0.32;
 }
 .orb-a {
   width: 38vw; height: 38vw; left: -8vw; top: 18vh;
-  background: hsl(calc(var(--h) + 30) 90% 55%);
+  background: hsl(calc(var(--h) + 25) 65% 42%);
   animation: drift 18s ease-in-out infinite alternate;
 }
 .orb-b {
   width: 32vw; height: 32vw; right: -6vw; top: 8vh;
-  background: hsl(calc(var(--h) - 40) 90% 50%);
+  background: hsl(calc(var(--h) - 35) 65% 38%);
   animation: drift 22s ease-in-out infinite alternate-reverse;
 }
 .orb-c {
   width: 30vw; height: 30vw; left: 35vw; bottom: -10vw;
-  background: hsl(calc(var(--h) + 90) 85% 50%);
+  background: hsl(calc(var(--h) + 65) 60% 40%);
   animation: drift 26s ease-in-out infinite alternate;
 }
 .bg-grid {
@@ -191,13 +191,13 @@ h1, h2, h3, .font-heading {
   38%, 100% { opacity: 0; transform: translateY(-60px) scale(0.95) rotate(var(--r)); }
 }
 
-/* Floating lens: ring + iris respond to scroll position */
 .mini-lens {
+  display: none;
   position: fixed;
-  right: 16px;
-  bottom: 16px;
-  width: 64px;
-  height: 64px;
+  right: 28px;
+  bottom: 28px;
+  width: 88px;
+  height: 88px;
   z-index: 46;
   pointer-events: none;
   filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 16px hsl(var(--h) 95% 65% / 0.6));
@@ -205,7 +205,7 @@ h1, h2, h3, .font-heading {
 .mini-lens .spin-box { transition: transform 0.12s linear; }
 .mini-lens .iris-hole { transition: transform 0.12s ease-out; }
 @media (min-width: 768px) {
-  .mini-lens { width: 88px; height: 88px; right: 28px; bottom: 28px; }
+  .mini-lens { display: block; }
 }
 
 /* Viewfinder corners + shutter curtain */
@@ -573,7 +573,7 @@ select.field option { color: #0b1220; }
 .field { font-size: 16px; } /* >=16px stops iOS Safari zooming into inputs */
 
 @media (max-width: 767px) {
-  .orb { filter: blur(50px); opacity: 0.45; }
+  .orb { filter: blur(60px); opacity: 0.22; }
   .orb-a { width: 70vw; height: 70vw; }
   .orb-b { width: 60vw; height: 60vw; }
   .orb-c { width: 60vw; height: 60vw; }
