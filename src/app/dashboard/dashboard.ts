@@ -8,25 +8,15 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-
-export type Category = 'football' | 'fashion' | 'personal' | 'reels' | 'nature';
-
-export interface PhotoItem {
-  id: string;
-  title: string;
-  category: Category;
-  categoryLabel: string;
-  image: string;
-  videoUrl?: string;
-  duration?: string;
-  location: string;
-  camera: string;
-  lens: string;
-  aperture: string;
-  shutter: string;
-  iso: string;
-  story: string;
-}
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  Category,
+  CONTACT,
+  Channel,
+  InquiryForm,
+  PhotoItem,
+  PHOTOS,
+} from '../models/photo.model';
 
 export type AdjustKey =
   | 'aperture'
@@ -66,31 +56,6 @@ const DEFAULTS: Record<AdjustKey, number> = {
   fade: 0,
 };
 
-/** Hue stops the page background travels through while scrolling. */
-const BG_HUES = [235, 275, 195, 150, 330, 255];
-
-/**
- * Where inquiries are sent. Replace these with your real accounts:
- *  - whatsapp: phone number in international format, digits only (e.g. 356 99 123 456 -> '35699123456')
- *  - instagram / facebook: the username / page name from your profile URL
- */
-export const CONTACT = {
-  whatsapp: '35699000000',
-  instagram: 'auroralys',
-  facebook: 'auroralys',
-};
-
-export type Channel = 'whatsapp' | 'instagram' | 'facebook';
-
-export interface InquiryForm {
-  name: string;
-  type: string;
-  when: string;
-  message: string;
-}
-
-const SECTION_IDS = ['home', 'portfolio', 'lab', 'contact'];
-
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
@@ -99,211 +64,64 @@ const SECTION_IDS = ['home', 'portfolio', 'lab', 'contact'];
 export class Dashboard {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  // ---------- Scroll + pointer state ----------
-  readonly scrollProgress = signal(0); // 0..1 across the whole page
-  readonly mouseX = signal(0); // -1..1
-  readonly mouseY = signal(0); // -1..1
+  // ---------- Scroll state ----------
+  readonly scrollY = signal(0);
+  readonly isScrolled = computed(() => this.scrollY() > 60);
 
-  // ---------- Hero ----------
-  /** Tilt for the hero camera, following the mouse. */
-  readonly cameraTilt = computed(
-    () =>
-      `transform: perspective(1100px) rotateY(${(this.mouseX() * 12).toFixed(1)}deg) rotateX(${(-this.mouseY() * 9).toFixed(1)}deg);`,
-  );
+  // ---------- Nav states ----------
+  readonly mobileNavOpen = signal(false);
+  readonly galleryDropdownOpen = signal(false);
 
-  readonly marqueeWords = [
-    'Nature & Landscapes',
-    'Malta Football',
-    'Reels & Short Video',
-    'Fashion Editorial',
-    'Personal Portraits',
-    'Golden Hour',
-    'Stadium Lights',
-    'Haute Couture',
+  // ---------- Hero slider ----------
+  readonly heroSlides = [
+    { image: 'images/malta_football_kick.jpg', label: 'Sports' },
+    { image: 'images/fashion_valletta.jpg', label: 'Fashion' },
+    { image: 'images/event_wedding_01.jpg', label: 'Events' },
+    { image: 'images/personal_portrait.jpg', label: 'Portraits' },
   ];
+  readonly heroIndex = signal(0);
+  private heroTimer: ReturnType<typeof setInterval> | null = null;
 
-  // ---------- Gallery ----------
-  readonly photos: PhotoItem[] = [
-    {
-      id: 'reel-shutter-01',
-      title: 'Macro Shutter Kinetics',
-      category: 'reels',
-      categoryLabel: 'Reel / Short Video',
-      image: 'images/malta_football_kick.jpg',
-      videoUrl: 'videos/photography_bg.webm',
-      duration: '0:20',
-      location: 'Optics Studio, Malta',
-      camera: 'Phantom Flex4K / Canon R5',
-      lens: 'RF 100mm f/2.8L Macro IS USM',
-      aperture: 'f/2.8',
-      shutter: '1/8000s',
-      iso: 'ISO 800',
-      story:
-        'Mechanical ballet in extreme slow-motion: the dual shutter curtains and reflex mirror box cycling at 1/8000th of a second under studio lighting.',
-    },
-    {
-      id: 'reel-matchday-02',
-      title: 'Matchday Kinetic Volley Reel',
-      category: 'reels',
-      categoryLabel: 'Reel / Short Video',
-      image: 'images/malta_football_save.jpg',
-      videoUrl: 'videos/photography_bg.webm',
-      duration: '0:35',
-      location: "Ta' Qali National Stadium",
-      camera: 'Sony FX3 Cinema Line',
-      lens: 'FE 400mm f/2.8 GM OSS',
-      aperture: 'f/2.8',
-      shutter: '1/2000s',
-      iso: 'ISO 1600',
-      story:
-        'High-octane short reel capturing the raw heartbeat of Malta football — explosive saves, pre-match adrenaline, and the roar under the floodlights.',
-    },
-    {
-      id: 'malta-strike-01',
-      title: "Thunderstrike at Ta' Qali",
-      category: 'football',
-      categoryLabel: 'Malta Football',
-      image: 'images/malta_football_kick.jpg',
-      location: "Ta' Qali National Stadium",
-      camera: 'Canon EOS R5 Mark II',
-      lens: 'RF 400mm f/2.8L IS USM',
-      aperture: 'f/2.8',
-      shutter: '1/4000s',
-      iso: 'ISO 2500',
-      story:
-        "Malta's number 8 unleashes a volley under the floodlights as turf and spray hang in the night air.",
-    },
-    {
-      id: 'fashion-valletta-01',
-      title: 'Grand Harbour Sovereign',
-      category: 'fashion',
-      categoryLabel: 'Fashion Shoot',
-      image: 'images/fashion_valletta.jpg',
-      location: 'Upper Barrakka, Valletta',
-      camera: 'Hasselblad H6D-100c',
-      lens: 'HC 50mm f/3.5 II',
-      aperture: 'f/4.0',
-      shutter: '1/800s',
-      iso: 'ISO 100',
-      story:
-        'Emerald and crimson silk catching the Mediterranean wind as dusk settles over the Grand Harbour.',
-    },
-    {
-      id: 'malta-save-02',
-      title: 'The Fingertip Save',
-      category: 'football',
-      categoryLabel: 'Malta Football',
-      image: 'images/malta_football_save.jpg',
-      location: "Ta' Qali National Stadium",
-      camera: 'Sony Alpha 1',
-      lens: 'FE 600mm f/4 GM OSS',
-      aperture: 'f/4.0',
-      shutter: '1/5000s',
-      iso: 'ISO 3200',
-      story:
-        'A horizontal dive in the 89th minute — the keeper tips the ball away through illuminated mist.',
-    },
-    {
-      id: 'fashion-runway-02',
-      title: 'Aurora Metallique',
-      category: 'fashion',
-      categoryLabel: 'Fashion Shoot',
-      image: 'images/fashion_runway.jpg',
-      location: 'Valletta Design Week',
-      camera: 'Leica SL2',
-      lens: 'Vario-Elmarit-SL 24-90mm',
-      aperture: 'f/2.8',
-      shutter: '1/1250s',
-      iso: 'ISO 1600',
-      story:
-        'Sculpted metallic silhouettes walking a reflective catwalk bathed in aurora-green light.',
-    },
-    {
-      id: 'personal-cliffs-01',
-      title: 'Dingli Horizons',
-      category: 'personal',
-      categoryLabel: 'Personal Shoot',
-      image: 'images/personal_couple.jpg',
-      location: 'Dingli Cliffs',
-      camera: 'Canon EOS R5',
-      lens: 'RF 50mm f/1.2L USM',
-      aperture: 'f/1.4',
-      shutter: '1/3200s',
-      iso: 'ISO 100',
-      story:
-        "Unscripted warmth on Malta's highest coastline as the horizon melts into gold.",
-    },
-    {
-      id: 'personal-portrait-02',
-      title: 'Golden Hour Solitude',
-      category: 'personal',
-      categoryLabel: 'Personal Shoot',
-      image: 'images/personal_portrait.jpg',
-      location: 'Mdina Outskirts',
-      camera: 'Fujifilm GFX 100 II',
-      lens: 'GF 110mm f/2 R LM WR',
-      aperture: 'f/2.0',
-      shutter: '1/2000s',
-      iso: 'ISO 200',
-      story:
-        'Natural light shaping an honest expression, with catchlights and warmth in the evening breeze.',
-    },
-    {
-      id: 'nature-dingli-01',
-      title: 'Dingli Sunset Solitude',
-      category: 'nature',
-      categoryLabel: 'Nature & Landscapes',
-      image: 'images/nature_dingli_cliffs.jpg',
-      location: 'Dingli Cliffs, Western Malta',
-      camera: 'Sony Alpha 7R V',
-      lens: 'FE 16-35mm f/2.8 GM II',
-      aperture: 'f/8.0',
-      shutter: '1/60s',
-      iso: 'ISO 100',
-      story:
-        'Golden hour raking across ancient Mediterranean limestone cliffs dropping 250 meters into the azure sea, capturing raw geological majesty.',
-    },
-    {
-      id: 'nature-gozo-02',
-      title: 'Gozo Azure Sanctuary',
-      category: 'nature',
-      categoryLabel: 'Nature & Landscapes',
-      image: 'images/nature_gozo_arch.jpg',
-      location: 'Dwejra Coastal Reserve, Gozo',
-      camera: 'Hasselblad X2D 100C',
-      lens: 'XCD 21mm f/4',
-      aperture: 'f/11',
-      shutter: '1/125s',
-      iso: 'ISO 64',
-      story:
-        'Crystal emerald-azure lagoon waters swirling beneath monumental sea arches, bathed in radiant Mediterranean summer clarity.',
-    },
-  ];
+  // ---------- Photos Data ----------
+  readonly photos: PhotoItem[] = PHOTOS;
 
   readonly filters: { key: 'all' | Category; label: string }[] = [
     { key: 'all', label: 'All' },
-    { key: 'personal', label: 'Personal Shoots' },
-    { key: 'nature', label: 'Nature & Landscapes' },
-    { key: 'reels', label: 'Reels / Short Video' },
-    { key: 'football', label: 'Malta Football' },
-    { key: 'fashion', label: 'Fashion Shoots' },
+    { key: 'fashion', label: 'Fashion' },
+    { key: 'sports', label: 'Sports' },
+    { key: 'event', label: 'Events' },
+    { key: 'portraits', label: 'Portraits' },
   ];
 
-  readonly activeCategory = signal<'all' | Category>('all');
   readonly selectedPhoto = signal<PhotoItem | null>(null);
-  readonly isFlashing = signal(false);
 
-  readonly filteredPhotos = computed(() => {
-    const cat = this.activeCategory();
-    return cat === 'all' ? this.photos : this.photos.filter((p) => p.category === cat);
+  /** 4 Curated picks on the Home screen for Selected Works: 1 Fashion, 1 Sports, 1 Events, 1 Portraits */
+  readonly selectedPicks = computed<PhotoItem[]>(() => {
+    const fashion =
+      this.photos.find((p) => p.id === 'fashion-valletta-01') ||
+      this.photos.find((p) => p.category === 'fashion')!;
+    const sports =
+      this.photos.find((p) => p.id === 'sports-kick-01') ||
+      this.photos.find((p) => p.category === 'sports')!;
+    const events =
+      this.photos.find((p) => p.id === 'event-wedding-01') ||
+      this.photos.find((p) => p.category === 'event')!;
+    const portraits =
+      this.photos.find((p) => p.id === 'portraits-golden-01') ||
+      this.photos.find((p) => p.category === 'portraits')!;
+    return [fashion, sports, events, portraits];
   });
 
   countFor(key: 'all' | Category): number {
-    return key === 'all' ? this.photos.length : this.photos.filter((p) => p.category === key).length;
+    return key === 'all'
+      ? this.photos.length
+      : this.photos.filter((p) => p.category === key).length;
   }
 
-  // ---------- Photo lab ----------
+  // ---------- Photo Lab: Aperture & Picture Adjustment ----------
   readonly controls: Control[] = [
     { key: 'brightness', label: 'Brightness', min: 40, max: 180, step: 1, unit: '%', group: 'Light' },
     { key: 'contrast', label: 'Contrast', min: 40, max: 200, step: 1, unit: '%', group: 'Light' },
@@ -311,7 +129,7 @@ export class Dashboard {
     { key: 'saturation', label: 'Saturation', min: 0, max: 250, step: 1, unit: '%', group: 'Colour' },
     { key: 'warmth', label: 'Warmth', min: -100, max: 100, step: 1, unit: '', group: 'Colour' },
     { key: 'hue', label: 'Hue shift', min: -180, max: 180, step: 1, unit: '°', group: 'Colour' },
-    { key: 'mono', label: 'Black & white', min: 0, max: 100, step: 1, unit: '%', group: 'Mood' },
+    { key: 'mono', label: 'Black & White', min: 0, max: 100, step: 1, unit: '%', group: 'Mood' },
     { key: 'vignette', label: 'Vignette', min: 0, max: 100, step: 1, unit: '%', group: 'Mood' },
   ];
   readonly groups: Control['group'][] = ['Light', 'Colour', 'Mood'];
@@ -320,7 +138,7 @@ export class Dashboard {
     { name: 'Original', values: {} },
     {
       name: 'Cinematic',
-      values: { contrast: 128, saturation: 110, warmth: 35, vignette: 55, brightness: 96, aperture: 2 },
+      values: { contrast: 128, saturation: 110, warmth: 35, vignette: 55, brightness: 96, aperture: 2.0 },
     },
     {
       name: 'Vintage',
@@ -340,13 +158,13 @@ export class Dashboard {
     },
   ];
 
-  readonly labPhotoIndex = signal(1);
+  readonly labPhotoIndex = signal(0);
   readonly activePreset = signal('Original');
   readonly adjust = signal<Record<AdjustKey, number>>({ ...DEFAULTS });
   readonly focusX = signal(50);
   readonly focusY = signal(45);
 
-  readonly labPhoto = computed(() => this.photos[this.labPhotoIndex()]);
+  readonly labPhoto = computed(() => this.photos[this.labPhotoIndex()] || this.photos[0]);
 
   controlsFor(group: Control['group']): Control[] {
     return this.controls.filter((c) => c.group === group);
@@ -356,7 +174,7 @@ export class Dashboard {
   readonly blurPx = computed(() => Math.max(0, (16 - this.aperture()) * 0.9));
   readonly sharpRadius = computed(() => 8 + this.aperture() * 3.2);
 
-  /** Colour filter applied to the whole preview. */
+  /** Colour filter applied to the preview image */
   readonly colourFilter = computed(() => {
     const a = this.adjust();
     return (
@@ -365,7 +183,7 @@ export class Dashboard {
     );
   });
 
-  /** Blurred layer revealed outside the focus area to simulate depth of field. */
+  /** Blurred layer revealed outside the focus area to simulate shallow depth of field */
   readonly blurLayerStyle = computed(() => {
     const r = this.sharpRadius();
     const mask = `radial-gradient(circle at ${this.focusX()}% ${this.focusY()}%, transparent ${r}%, #000 ${r + 26}%)`;
@@ -387,7 +205,7 @@ export class Dashboard {
 
   readonly fadeStyle = computed(() => `opacity: ${(this.adjust().fade / 100) * 0.7};`);
 
-  /** Hexagonal iris icon that opens and closes with the f-stop. */
+  /** Hexagonal iris icon that opens and closes with the f-stop */
   readonly irisPoints = computed(() => {
     const r = 8 + (16 - this.aperture()) * 1.8;
     return Array.from({ length: 6 }, (_, i) => {
@@ -431,13 +249,21 @@ export class Dashboard {
     this.focusY.set(Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100)));
   }
 
+  openInLab(photo: PhotoItem): void {
+    const idx = this.photos.findIndex((p) => p.id === photo.id);
+    if (idx !== -1) {
+      this.labPhotoIndex.set(idx);
+    }
+    this.closePhoto();
+    this.scrollTo('lab');
+  }
+
   // ---------- Inquiry ----------
   readonly shootTypes = [
-    'Nature & landscape commission',
-    'Malta football coverage',
     'Fashion shoot',
-    'Personal session',
-    'Reels & short video production',
+    'Sports coverage',
+    'Event photography',
+    'Portrait session',
     'Something else',
   ];
   readonly form = signal<InquiryForm>({
@@ -455,7 +281,6 @@ export class Dashboard {
     this.formError.set('');
   }
 
-  /** Validates the inquiry, then opens the chosen app with the message ready to send. */
   send(channel: Channel): void {
     const f = this.form();
     if (!f.name.trim() || !f.message.trim()) {
@@ -475,7 +300,6 @@ export class Dashboard {
       url = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
       this.sendNotice.set('Opening WhatsApp with your message ready to send…');
     } else {
-      // Instagram and Facebook don't accept pre-filled text, so copy it for pasting.
       if (this.isBrowser) navigator.clipboard?.writeText(text).catch(() => undefined);
       url =
         channel === 'instagram'
@@ -486,77 +310,64 @@ export class Dashboard {
     }
 
     this.formError.set('');
-    this.flash();
     if (this.isBrowser) window.open(url, '_blank', 'noopener');
   }
 
-  // ---------- Scroll-driven background ----------
-  private hueAt(p: number): number {
-    const seg = Math.min(0.9999, Math.max(0, p)) * (BG_HUES.length - 1);
-    const i = Math.floor(seg);
-    const t = seg - i;
-    return BG_HUES[i] + (BG_HUES[i + 1] - BG_HUES[i]) * t;
-  }
-
-  readonly bgHue = computed(() => this.hueAt(this.scrollProgress()));
-
-  // ---------- Scroll-driven camera ----------
-  /** The floating camera's lens ring turns with the page. */
-  readonly lensSpin = computed(() => (this.scrollProgress() * 1440).toFixed(0));
-  /** The iris opens and closes as you scroll, like adjusting the aperture. */
-  readonly irisScale = computed(() =>
-    (0.3 + 0.7 * (0.5 + 0.5 * Math.cos(this.scrollProgress() * 10 * Math.PI))).toFixed(3),
-  );
-
-  /** Cinematic shutter curtain that snaps shut/open whenever a new section comes into view. */
-  readonly shutterPulse = signal(false);
-  private currentSection = -1;
-
-  private trackSection(): void {
-    const mid = window.innerHeight * 0.5;
-    let idx = 0;
-    SECTION_IDS.forEach((id, i) => {
-      const el = document.getElementById(id);
-      if (el && el.getBoundingClientRect().top <= mid) idx = i;
-    });
-    if (idx !== this.currentSection) {
-      if (this.currentSection !== -1 && !this.shutterPulse()) {
-        this.shutterPulse.set(true);
-        setTimeout(() => this.shutterPulse.set(false), 650);
-      }
-      this.currentSection = idx;
-    }
-  }
-
   constructor() {
+    this.route.queryParams.subscribe((params) => {
+      const photoId = params['labPhoto'];
+      if (photoId) {
+        const idx = this.photos.findIndex((p) => p.id === photoId);
+        if (idx !== -1) {
+          this.labPhotoIndex.set(idx);
+        }
+      }
+    });
+
     afterNextRender(() => {
-      this.updateScroll();
+      this.startHeroTimer();
       this.observeReveals();
+      const fragment = this.route.snapshot.fragment;
+      if (fragment && this.isBrowser) {
+        setTimeout(() => {
+          document.getElementById(fragment)?.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      }
     });
   }
 
   @HostListener('window:scroll')
   onScroll(): void {
-    if (this.isBrowser) this.updateScroll();
-  }
-
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(e: MouseEvent): void {
-    if (!this.isBrowser) return;
-    this.mouseX.set((e.clientX / window.innerWidth) * 2 - 1);
-    this.mouseY.set((e.clientY / window.innerHeight) * 2 - 1);
+    if (this.isBrowser) this.scrollY.set(window.scrollY);
   }
 
   @HostListener('window:keydown.escape')
   onEscape(): void {
     this.closePhoto();
+    this.mobileNavOpen.set(false);
+    this.galleryDropdownOpen.set(false);
   }
 
-  private updateScroll(): void {
-    const doc = document.documentElement;
-    const max = doc.scrollHeight - doc.clientHeight;
-    this.scrollProgress.set(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0);
-    this.trackSection();
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.nav-dropdown-wrap')) {
+      this.galleryDropdownOpen.set(false);
+    }
+  }
+
+  private startHeroTimer(): void {
+    this.heroTimer = setInterval(() => {
+      this.heroIndex.update((i) => (i + 1) % this.heroSlides.length);
+    }, 5000);
+  }
+
+  setHeroSlide(i: number): void {
+    this.heroIndex.set(i);
+    if (this.heroTimer) {
+      clearInterval(this.heroTimer);
+      this.startHeroTimer();
+    }
   }
 
   private observeReveals(): void {
@@ -574,38 +385,41 @@ export class Dashboard {
           }
         }
       },
-      { threshold: 0.15 },
+      { threshold: 0.12 },
     );
     targets.forEach((el) => io.observe(el));
   }
 
-  // ---------- Actions ----------
-  setCategory(cat: 'all' | Category): void {
-    this.activeCategory.set(cat);
+  // ---------- Navigation & Actions ----------
+  toggleGalleryDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.galleryDropdownOpen.update((open) => !open);
+  }
+
+  navigateToCategory(cat: 'all' | Category): void {
+    this.galleryDropdownOpen.set(false);
+    this.mobileNavOpen.set(false);
+    if (cat === 'all') {
+      this.router.navigate(['/gallery']);
+    } else {
+      this.router.navigate(['/gallery'], { queryParams: { category: cat } });
+    }
   }
 
   openPhoto(photo: PhotoItem): void {
     this.selectedPhoto.set(photo);
-    this.flash();
+    if (this.isBrowser) document.body.style.overflow = 'hidden';
   }
 
   closePhoto(): void {
     this.selectedPhoto.set(null);
-  }
-
-  openInLab(photo: PhotoItem): void {
-    this.labPhotoIndex.set(this.photos.indexOf(photo));
-    this.closePhoto();
-    this.scrollTo('lab');
-  }
-
-  flash(): void {
-    this.isFlashing.set(true);
-    setTimeout(() => this.isFlashing.set(false), 350);
+    if (this.isBrowser) document.body.style.overflow = '';
   }
 
   scrollTo(id: string): void {
     if (!this.isBrowser) return;
+    this.mobileNavOpen.set(false);
+    this.galleryDropdownOpen.set(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 }
