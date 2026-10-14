@@ -596,12 +596,12 @@ select.field option { color: #0b1220; }
   .filter-pill { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
   .preset { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
 
-  .lab-range { height: 8px; }
-  .lab-range::-webkit-slider-thumb { width: 24px; height: 24px; }
-  .lab-range::-moz-range-thumb { width: 18px; height: 18px; }
+  .lab-range { height: 6px; }
+  .lab-range::-webkit-slider-thumb { width: 20px; height: 20px; }
+  .lab-range::-moz-range-thumb { width: 16px; height: 16px; }
 
   .letter:hover { transform: none; }
-  .thumb { width: 56px; height: 38px; border-radius: 0.5rem; }
+  .thumb { width: 48px; height: 32px; border-radius: 0.4rem; }
   .collage-card { border-radius: 1rem; }
 
   .marquee { animation-duration: 28s; }
