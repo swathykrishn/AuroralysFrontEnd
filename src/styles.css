@@ -304,16 +304,29 @@ h1, h2, h3, .font-heading {
 }
 .btn-ghost:hover { background: rgba(255, 255, 255, 0.16); transform: translateY(-3px); }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .filter-pill {
-  padding: 0.55rem 1.1rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #cbd5e1;
-  transition: all 0.3s;
+  transition: all 0.25s;
+  user-select: none;
 }
 .filter-pill:hover { color: #fff; }
-.filter-pill.active { background: #fff; color: #0b1220; }
+.filter-pill.active { background: #fff; color: #0b1220; box-shadow: 0 4px 15px -3px rgba(255, 255, 255, 0.3); }
 
 .chip {
   display: inline-block;
@@ -578,18 +591,18 @@ select.field option { color: #0b1220; }
     35% { width: 44px; height: 44px; border-color: #4ade80; }
   }
 
-  .nav-link { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
-  .btn-primary, .btn-ghost { padding: 0.85rem 1.4rem; min-height: 46px; }
-  .filter-pill { padding: 0.5rem 0.9rem; }
-  .preset { padding: 0.5rem 0.9rem; }
+  .nav-link { padding: 0.35rem 0.65rem; font-size: 0.78rem; }
+  .btn-primary, .btn-ghost { padding: 0.8rem 1.3rem; min-height: 44px; }
+  .filter-pill { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
+  .preset { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
 
   .lab-range { height: 8px; }
-  .lab-range::-webkit-slider-thumb { width: 26px; height: 26px; }
-  .lab-range::-moz-range-thumb { width: 20px; height: 20px; }
+  .lab-range::-webkit-slider-thumb { width: 24px; height: 24px; }
+  .lab-range::-moz-range-thumb { width: 18px; height: 18px; }
 
   .letter:hover { transform: none; }
-  .thumb { width: 64px; height: 46px; }
-  .collage-card { border-radius: 1.1rem; }
+  .thumb { width: 56px; height: 38px; border-radius: 0.5rem; }
+  .collage-card { border-radius: 1rem; }
 
   .marquee { animation-duration: 28s; }
 }
