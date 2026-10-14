@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
-export type Category = 'football' | 'fashion' | 'personal';
+export type Category = 'football' | 'fashion' | 'personal' | 'reels' | 'nature';
 
 export interface PhotoItem {
   id: string;
@@ -17,6 +17,8 @@ export interface PhotoItem {
   category: Category;
   categoryLabel: string;
   image: string;
+  videoUrl?: string;
+  duration?: string;
   location: string;
   camera: string;
   lens: string;
@@ -67,6 +69,28 @@ const DEFAULTS: Record<AdjustKey, number> = {
 /** Hue stops the page background travels through while scrolling. */
 const BG_HUES = [235, 275, 195, 150, 330, 255];
 
+/**
+ * Where inquiries are sent. Replace these with your real accounts:
+ *  - whatsapp: phone number in international format, digits only (e.g. 356 99 123 456 -> '35699123456')
+ *  - instagram / facebook: the username / page name from your profile URL
+ */
+export const CONTACT = {
+  whatsapp: '35699000000',
+  instagram: 'auroralys',
+  facebook: 'auroralys',
+};
+
+export type Channel = 'whatsapp' | 'instagram' | 'facebook';
+
+export interface InquiryForm {
+  name: string;
+  type: string;
+  when: string;
+  message: string;
+}
+
+const SECTION_IDS = ['home', 'portfolio', 'lab', 'contact'];
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
@@ -82,10 +106,16 @@ export class Dashboard {
   readonly mouseY = signal(0); // -1..1
 
   // ---------- Hero ----------
-  readonly titleLetters = 'AURORALYS'.split('');
+  /** Tilt for the hero camera, following the mouse. */
+  readonly cameraTilt = computed(
+    () =>
+      `transform: perspective(1100px) rotateY(${(this.mouseX() * 12).toFixed(1)}deg) rotateX(${(-this.mouseY() * 9).toFixed(1)}deg);`,
+  );
 
   readonly marqueeWords = [
+    'Nature & Landscapes',
     'Malta Football',
+    'Reels & Short Video',
     'Fashion Editorial',
     'Personal Portraits',
     'Golden Hour',
@@ -95,6 +125,40 @@ export class Dashboard {
 
   // ---------- Gallery ----------
   readonly photos: PhotoItem[] = [
+    {
+      id: 'reel-shutter-01',
+      title: 'Macro Shutter Kinetics',
+      category: 'reels',
+      categoryLabel: 'Reel / Short Video',
+      image: 'images/malta_football_kick.jpg',
+      videoUrl: 'videos/photography_bg.webm',
+      duration: '0:20',
+      location: 'Optics Studio, Malta',
+      camera: 'Phantom Flex4K / Canon R5',
+      lens: 'RF 100mm f/2.8L Macro IS USM',
+      aperture: 'f/2.8',
+      shutter: '1/8000s',
+      iso: 'ISO 800',
+      story:
+        'Mechanical ballet in extreme slow-motion: the dual shutter curtains and reflex mirror box cycling at 1/8000th of a second under studio lighting.',
+    },
+    {
+      id: 'reel-matchday-02',
+      title: 'Matchday Kinetic Volley Reel',
+      category: 'reels',
+      categoryLabel: 'Reel / Short Video',
+      image: 'images/malta_football_save.jpg',
+      videoUrl: 'videos/photography_bg.webm',
+      duration: '0:35',
+      location: "Ta' Qali National Stadium",
+      camera: 'Sony FX3 Cinema Line',
+      lens: 'FE 400mm f/2.8 GM OSS',
+      aperture: 'f/2.8',
+      shutter: '1/2000s',
+      iso: 'ISO 1600',
+      story:
+        'High-octane short reel capturing the raw heartbeat of Malta football — explosive saves, pre-match adrenaline, and the roar under the floodlights.',
+    },
     {
       id: 'malta-strike-01',
       title: "Thunderstrike at Ta' Qali",
@@ -185,13 +249,45 @@ export class Dashboard {
       story:
         'Natural light shaping an honest expression, with catchlights and warmth in the evening breeze.',
     },
+    {
+      id: 'nature-dingli-01',
+      title: 'Dingli Sunset Solitude',
+      category: 'nature',
+      categoryLabel: 'Nature & Landscapes',
+      image: 'images/nature_dingli_cliffs.jpg',
+      location: 'Dingli Cliffs, Western Malta',
+      camera: 'Sony Alpha 7R V',
+      lens: 'FE 16-35mm f/2.8 GM II',
+      aperture: 'f/8.0',
+      shutter: '1/60s',
+      iso: 'ISO 100',
+      story:
+        'Golden hour raking across ancient Mediterranean limestone cliffs dropping 250 meters into the azure sea, capturing raw geological majesty.',
+    },
+    {
+      id: 'nature-gozo-02',
+      title: 'Gozo Azure Sanctuary',
+      category: 'nature',
+      categoryLabel: 'Nature & Landscapes',
+      image: 'images/nature_gozo_arch.jpg',
+      location: 'Dwejra Coastal Reserve, Gozo',
+      camera: 'Hasselblad X2D 100C',
+      lens: 'XCD 21mm f/4',
+      aperture: 'f/11',
+      shutter: '1/125s',
+      iso: 'ISO 64',
+      story:
+        'Crystal emerald-azure lagoon waters swirling beneath monumental sea arches, bathed in radiant Mediterranean summer clarity.',
+    },
   ];
 
   readonly filters: { key: 'all' | Category; label: string }[] = [
     { key: 'all', label: 'All' },
+    { key: 'personal', label: 'Personal Shoots' },
+    { key: 'nature', label: 'Nature & Landscapes' },
+    { key: 'reels', label: 'Reels / Short Video' },
     { key: 'football', label: 'Malta Football' },
     { key: 'fashion', label: 'Fashion Shoots' },
-    { key: 'personal', label: 'Personal Shoots' },
   ];
 
   readonly activeCategory = signal<'all' | Category>('all');
@@ -335,13 +431,63 @@ export class Dashboard {
     this.focusY.set(Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100)));
   }
 
-  // ---------- Contact ----------
-  readonly sent = signal(false);
+  // ---------- Inquiry ----------
+  readonly shootTypes = [
+    'Nature & landscape commission',
+    'Malta football coverage',
+    'Fashion shoot',
+    'Personal session',
+    'Reels & short video production',
+    'Something else',
+  ];
+  readonly form = signal<InquiryForm>({
+    name: '',
+    type: this.shootTypes[0],
+    when: '',
+    message: '',
+  });
+  readonly contact = CONTACT;
+  readonly formError = signal('');
+  readonly sendNotice = signal('');
 
-  submit(event: Event): void {
-    event.preventDefault();
-    this.sent.set(true);
+  setField(key: keyof InquiryForm, value: string): void {
+    this.form.update((f) => ({ ...f, [key]: value }));
+    this.formError.set('');
+  }
+
+  /** Validates the inquiry, then opens the chosen app with the message ready to send. */
+  send(channel: Channel): void {
+    const f = this.form();
+    if (!f.name.trim() || !f.message.trim()) {
+      this.formError.set('Please fill in your name and a short message first.');
+      this.sendNotice.set('');
+      return;
+    }
+
+    const text =
+      `Hi Auroralys! I'm ${f.name.trim()}.\n` +
+      `Inquiry: ${f.type}\n` +
+      (f.when.trim() ? `Date / place: ${f.when.trim()}\n` : '') +
+      `\n${f.message.trim()}`;
+
+    let url: string;
+    if (channel === 'whatsapp') {
+      url = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
+      this.sendNotice.set('Opening WhatsApp with your message ready to send…');
+    } else {
+      // Instagram and Facebook don't accept pre-filled text, so copy it for pasting.
+      if (this.isBrowser) navigator.clipboard?.writeText(text).catch(() => undefined);
+      url =
+        channel === 'instagram'
+          ? `https://ig.me/m/${CONTACT.instagram}`
+          : `https://m.me/${CONTACT.facebook}`;
+      const name = channel === 'instagram' ? 'Instagram' : 'Facebook Messenger';
+      this.sendNotice.set(`Message copied! Opening ${name} — just paste it into the chat and send.`);
+    }
+
+    this.formError.set('');
     this.flash();
+    if (this.isBrowser) window.open(url, '_blank', 'noopener');
   }
 
   // ---------- Scroll-driven background ----------
@@ -354,31 +500,33 @@ export class Dashboard {
 
   readonly bgHue = computed(() => this.hueAt(this.scrollProgress()));
 
-  // ---------- Scroll-driven ball ----------
-  private ballPoint(p: number): { x: number; y: number } {
-    const q = Math.min(1, Math.max(0, p));
-    // Left -> right -> left -> right, bouncing between the edges while falling down the page.
-    const x = 50 - 40 * Math.cos(q * 3 * Math.PI);
-    const bounce = 9 * Math.abs(Math.sin(q * 3 * Math.PI));
-    const y = 14 + q * 68 - bounce;
-    return { x, y };
-  }
+  // ---------- Scroll-driven camera ----------
+  /** The floating camera's lens ring turns with the page. */
+  readonly lensSpin = computed(() => (this.scrollProgress() * 1440).toFixed(0));
+  /** The iris opens and closes as you scroll, like adjusting the aperture. */
+  readonly irisScale = computed(() =>
+    (0.3 + 0.7 * (0.5 + 0.5 * Math.cos(this.scrollProgress() * 10 * Math.PI))).toFixed(3),
+  );
 
-  readonly ballStyle = computed(() => {
-    const p = this.scrollProgress();
-    const { x, y } = this.ballPoint(p);
-    return `left:${x.toFixed(2)}%; top:${y.toFixed(2)}vh; transform: translate(-50%,-50%) rotate(${(p * 5400).toFixed(0)}deg);`;
-  });
+  /** Cinematic shutter curtain that snaps shut/open whenever a new section comes into view. */
+  readonly shutterPulse = signal(false);
+  private currentSection = -1;
 
-  readonly ballTrail = computed(() => {
-    const p = this.scrollProgress();
-    return Array.from({ length: 9 }, (_, i) => {
-      const { x, y } = this.ballPoint(p - (i + 1) * 0.011);
-      const scale = 1 - (i + 1) * 0.085;
-      const opacity = 0.5 - i * 0.05;
-      return `left:${x.toFixed(2)}%; top:${y.toFixed(2)}vh; opacity:${opacity.toFixed(2)}; transform: translate(-50%,-50%) scale(${scale.toFixed(2)});`;
+  private trackSection(): void {
+    const mid = window.innerHeight * 0.5;
+    let idx = 0;
+    SECTION_IDS.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= mid) idx = i;
     });
-  });
+    if (idx !== this.currentSection) {
+      if (this.currentSection !== -1 && !this.shutterPulse()) {
+        this.shutterPulse.set(true);
+        setTimeout(() => this.shutterPulse.set(false), 650);
+      }
+      this.currentSection = idx;
+    }
+  }
 
   constructor() {
     afterNextRender(() => {
@@ -408,6 +556,7 @@ export class Dashboard {
     const doc = document.documentElement;
     const max = doc.scrollHeight - doc.clientHeight;
     this.scrollProgress.set(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0);
+    this.trackSection();
   }
 
   private observeReveals(): void {
