@@ -11,11 +11,13 @@ import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Category,
+  ClientReview,
   CONTACT,
   Channel,
   InquiryForm,
   PhotoItem,
   PHOTOS,
+  REVIEWS,
 } from '../models/photo.model';
 
 export type AdjustKey =
@@ -158,13 +160,14 @@ export class Dashboard {
     },
   ];
 
+  readonly labPhotos = computed<PhotoItem[]>(() => this.photos.slice(0, 4));
   readonly labPhotoIndex = signal(0);
   readonly activePreset = signal('Original');
   readonly adjust = signal<Record<AdjustKey, number>>({ ...DEFAULTS });
   readonly focusX = signal(50);
   readonly focusY = signal(45);
 
-  readonly labPhoto = computed(() => this.photos[this.labPhotoIndex()] || this.photos[0]);
+  readonly labPhoto = computed(() => this.labPhotos()[this.labPhotoIndex()] || this.labPhotos()[0]);
 
   controlsFor(group: Control['group']): Control[] {
     return this.controls.filter((c) => c.group === group);
@@ -250,12 +253,124 @@ export class Dashboard {
   }
 
   openInLab(photo: PhotoItem): void {
-    const idx = this.photos.findIndex((p) => p.id === photo.id);
+    const idx = this.labPhotos().findIndex((p) => p.id === photo.id);
     if (idx !== -1) {
       this.labPhotoIndex.set(idx);
+    } else {
+      this.labPhotoIndex.set(0);
     }
     this.closePhoto();
     this.scrollTo('lab');
+  }
+
+  // ---------- Reviews & Feedback ----------
+  readonly reviews = signal<ClientReview[]>(REVIEWS);
+  readonly reviewCategoryFilter = signal<'all' | Category>('all');
+  readonly reviewFilterOptions: { key: 'all' | Category; label: string }[] = [
+    { key: 'all', label: 'All Reviews' },
+    { key: 'fashion', label: 'Fashion' },
+    { key: 'sports', label: 'Sports' },
+    { key: 'event', label: 'Events' },
+    { key: 'portraits', label: 'Portraits' },
+  ];
+  readonly filteredReviews = computed(() => {
+    const f = this.reviewCategoryFilter();
+    if (f === 'all') return this.reviews();
+    return this.reviews().filter((r) => r.category === f);
+  });
+  readonly reviewModalOpen = signal(false);
+  readonly reviewFormError = signal('');
+  readonly reviewSubmitNotice = signal('');
+  readonly newReviewForm = signal<{
+    name: string;
+    category: Category;
+    roleOrShoot: string;
+    rating: number;
+    comment: string;
+  }>({
+    name: '',
+    category: 'fashion',
+    roleOrShoot: '',
+    rating: 5,
+    comment: '',
+  });
+
+  setReviewFilter(key: 'all' | Category): void {
+    this.reviewCategoryFilter.set(key);
+  }
+
+  reviewCountFor(key: 'all' | Category): number {
+    return key === 'all'
+      ? this.reviews().length
+      : this.reviews().filter((r) => r.category === key).length;
+  }
+
+  toggleReviewModal(): void {
+    this.reviewModalOpen.set(!this.reviewModalOpen());
+    this.reviewFormError.set('');
+    this.reviewSubmitNotice.set('');
+  }
+
+  setReviewRating(stars: number): void {
+    this.newReviewForm.update((f) => ({ ...f, rating: stars }));
+  }
+
+  setNewReviewField(key: string, value: any): void {
+    this.newReviewForm.update((f) => ({ ...f, [key]: value }));
+    this.reviewFormError.set('');
+  }
+
+  submitReview(): void {
+    const f = this.newReviewForm();
+    if (!f.name.trim() || !f.comment.trim()) {
+      this.reviewFormError.set('Please provide your name and a brief review.');
+      return;
+    }
+
+    const initials = f.name
+      .trim()
+      .split(/\s+/)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+
+    const gradients = [
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    ];
+    const randomBg = gradients[Math.floor(Math.random() * gradients.length)];
+
+    const newRev: ClientReview = {
+      id: 'rev-' + Date.now(),
+      name: f.name.trim(),
+      roleOrShoot: f.roleOrShoot.trim() || `${f.category.toUpperCase()} Client`,
+      category: f.category,
+      rating: f.rating,
+      date: 'Just now',
+      comment: f.comment.trim(),
+      avatarBg: randomBg,
+      initials: initials || 'AC',
+      verified: true,
+    };
+
+    this.reviews.update((list) => [newRev, ...list]);
+    this.reviewSubmitNotice.set('Thank you! Your feedback has been published.');
+    this.newReviewForm.set({
+      name: '',
+      category: 'fashion',
+      roleOrShoot: '',
+      rating: 5,
+      comment: '',
+    });
+
+    setTimeout(() => {
+      this.reviewModalOpen.set(false);
+      this.reviewSubmitNotice.set('');
+    }, 1800);
   }
 
   // ---------- Inquiry ----------
@@ -420,6 +535,11 @@ export class Dashboard {
     if (!this.isBrowser) return;
     this.mobileNavOpen.set(false);
     this.galleryDropdownOpen.set(false);
+    if (id === 'contact' || id === 'enquiry') {
+      const el = document.getElementById('enquiry') || document.getElementById('contact');
+      el?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 }

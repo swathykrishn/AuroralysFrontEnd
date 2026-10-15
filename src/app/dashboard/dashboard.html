@@ -15,7 +15,9 @@
         <button class="nav-item" (click)="scrollTo('home')">Home</button>
         <button class="nav-item" (click)="navigateToCategory('all')">Gallery</button>
         <button class="nav-item" (click)="scrollTo('lab')">Photo Lab</button>
-        <button class="nav-cta" (click)="scrollTo('contact')">Book a Shoot</button>
+        <button class="nav-item" (click)="scrollTo('reviews')">Reviews</button>
+        <button class="nav-item" (click)="scrollTo('enquiry')">Enquiry</button>
+        <button class="nav-cta" (click)="scrollTo('enquiry')">Book a Shoot</button>
       </nav>
 
       <!-- Mobile hamburger -->
@@ -33,7 +35,9 @@
       <button class="mobile-nav-item" (click)="scrollTo('home')">Home</button>
       <button class="mobile-nav-item" (click)="navigateToCategory('all')">Gallery</button>
       <button class="mobile-nav-item" (click)="scrollTo('lab')">Photo Lab</button>
-      <button class="mobile-nav-item cta" (click)="scrollTo('contact')">Book a Shoot</button>
+      <button class="mobile-nav-item" (click)="scrollTo('reviews')">Reviews &amp; Feedback</button>
+      <button class="mobile-nav-item" (click)="scrollTo('enquiry')">Enquiry</button>
+      <button class="mobile-nav-item cta" (click)="scrollTo('enquiry')">Book a Shoot</button>
     </div>
     }
   </header>
@@ -185,7 +189,7 @@
             <!-- Thumbnail Switcher & Presets Strip -->
             <div class="lab-bottom-bar">
               <div class="lab-thumbs-scroll" aria-label="Select photo for lab">
-                @for (p of photos; track p.id; let i = $index) {
+                @for (p of labPhotos(); track p.id; let i = $index) {
                 <button (click)="labPhotoIndex.set(i)" class="lab-thumb-btn" [class.active]="labPhotoIndex() === i"
                   [attr.aria-label]="'Edit ' + p.title">
                   <img [src]="p.image" [alt]="p.title" class="thumb-img">
@@ -269,35 +273,220 @@
       </div>
     </section>
 
-    <!-- ============ ABOUT STRIP ============ -->
-    <section class="about-strip reveal">
-      <div class="about-text">
-        <div class="section-label">About the Artist</div>
-        <h2 class="section-title">The <em>eye</em> behind the lens</h2>
-        <p class="about-body">
-          Based in Malta, Auroralys brings an editorial sensibility to every shoot — whether capturing the raw intensity of
-          a stadium moment, the elegant flow of a runway, the emotion of a milestone event, or the quiet truth of a
-          portrait session.
+    <!-- ============ REVIEWS & FEEDBACK ============ -->
+    <section id="reviews" class="reviews-section scroll-mt-20">
+      <div class="reviews-inner reveal">
+        <div class="section-label">Client Reviews &amp; Feedback</div>
+        <h2 class="section-title">Words of <em>Trust &amp; Artistry</em></h2>
+        <p class="section-sub">
+          Genuine feedback from creative directors, athletic leagues, couples, and portrait clients who have stepped in front of the lens.
         </p>
-        <button class="btn-outline" (click)="scrollTo('contact')">Get in touch →</button>
-      </div>
-      <div class="about-image-wrap">
-        <img src="images/fashion_valletta.jpg" alt="Auroralys at work" class="about-img">
-        <div class="about-badge">
-          <span class="badge-num">12+</span>
-          <span class="badge-label">Years of experience</span>
+
+        <!-- Rating Summary Bar -->
+        <div class="reviews-rating-bar">
+          <div class="rating-metric">
+            <span class="rating-big-num">5.0</span>
+            <div class="rating-stars-col">
+              <div class="stars-row" aria-label="5 out of 5 stars">
+                @for (star of [1,2,3,4,5]; track star) {
+                <svg class="star-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                }
+              </div>
+              <span class="rating-metric-sub">Based on verified shoots in Malta &amp; Europe</span>
+            </div>
+          </div>
+
+          <div class="rating-pill-badges">
+            <span class="trust-badge">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              100% Recommendation Rate
+            </span>
+            <span class="trust-badge">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Editorial &amp; Commercial Grade
+            </span>
+          </div>
+
+          <button class="btn-leave-review" (click)="toggleReviewModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            Leave Feedback / Review
+          </button>
         </div>
+
+        <!-- Category Filters -->
+        <div class="reviews-filters" role="tablist">
+          @for (f of reviewFilterOptions; track f.key) {
+          <button class="review-filter-btn" [class.active]="reviewCategoryFilter() === f.key"
+            (click)="setReviewFilter(f.key)" role="tab">
+            {{ f.label }}
+            <span class="filter-count">({{ reviewCountFor(f.key) }})</span>
+          </button>
+          }
+        </div>
+
+        <!-- Reviews Grid -->
+        <div class="reviews-grid">
+          @for (rev of filteredReviews(); track rev.id) {
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="reviewer-avatar" [style.background]="rev.avatarBg">
+                {{ rev.initials }}
+              </div>
+              <div class="reviewer-meta">
+                <div class="reviewer-name-row">
+                  <h3 class="reviewer-name">{{ rev.name }}</h3>
+                  @if (rev.verified) {
+                  <span class="verified-tag" title="Verified client">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Verified
+                  </span>
+                  }
+                </div>
+                <span class="reviewer-role">{{ rev.roleOrShoot }}</span>
+              </div>
+            </div>
+
+            <div class="review-stars-date">
+              <div class="stars-mini">
+                @for (s of [1,2,3,4,5]; track s) {
+                <svg class="star-icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                }
+              </div>
+              <span class="review-date">{{ rev.date }}</span>
+            </div>
+
+            <blockquote class="review-comment">“{{ rev.comment }}”</blockquote>
+
+            <div class="review-footer">
+              <span class="review-discipline-tag">{{ rev.category }}</span>
+            </div>
+          </article>
+          }
+        </div>
+
+        <!-- Inline Review Submission Modal -->
+        @if (reviewModalOpen()) {
+        <div class="review-modal-backdrop" (click)="toggleReviewModal()">
+          <div class="review-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-col">
+                <span class="modal-eyebrow">Client Feedback</span>
+                <h3 class="modal-title">Share Your Experience</h3>
+              </div>
+              <button class="modal-close-btn" (click)="toggleReviewModal()" aria-label="Close dialog">✕</button>
+            </div>
+
+            <form class="review-form" (submit)="$event.preventDefault(); submitReview()">
+              <label class="form-field">
+                <span class="form-label">Rating</span>
+                <div class="star-rating-select">
+                  @for (star of [1,2,3,4,5]; track star) {
+                  <button type="button" class="star-pick-btn" [class.active]="star <= newReviewForm().rating"
+                    (click)="setReviewRating(star)" [attr.aria-label]="star + ' stars'">
+                    ★
+                  </button>
+                  }
+                  <span class="star-rating-label">{{ newReviewForm().rating }} of 5 Stars</span>
+                </div>
+              </label>
+
+              <div class="form-row">
+                <label class="form-field">
+                  <span class="form-label">Your Name</span>
+                  <input class="form-input" type="text" placeholder="e.g. Rachel Cassar"
+                    [value]="newReviewForm().name" (input)="setNewReviewField('name', $any($event.target).value)">
+                </label>
+
+                <label class="form-field">
+                  <span class="form-label">Discipline / Shoot</span>
+                  <select class="form-input" [value]="newReviewForm().category"
+                    (change)="setNewReviewField('category', $any($event.target).value)">
+                    <option value="fashion">Fashion</option>
+                    <option value="sports">Sports</option>
+                    <option value="event">Events</option>
+                    <option value="portraits">Portraits</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="form-field">
+                <span class="form-label">Project or Event Title (optional)</span>
+                <input class="form-input" type="text" placeholder="e.g. Runway Show / Ta' Qali Match / Wedding"
+                  [value]="newReviewForm().roleOrShoot" (input)="setNewReviewField('roleOrShoot', $any($event.target).value)">
+              </label>
+
+              <label class="form-field">
+                <span class="form-label">Your Review &amp; Feedback</span>
+                <textarea class="form-input form-textarea" rows="4"
+                  placeholder="Tell us about the shoot experience, the photos, and working with Auroralys…"
+                  [value]="newReviewForm().comment" (input)="setNewReviewField('comment', $any($event.target).value)"></textarea>
+              </label>
+
+              @if (reviewFormError()) {
+              <p class="form-error">{{ reviewFormError() }}</p>
+              }
+
+              @if (reviewSubmitNotice()) {
+              <p class="form-success">{{ reviewSubmitNotice() }}</p>
+              }
+
+              <div class="modal-actions">
+                <button type="button" class="btn-cancel" (click)="toggleReviewModal()">Cancel</button>
+                <button type="submit" class="btn-submit-review">Publish Review</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        }
       </div>
     </section>
 
-    <!-- ============ CONTACT ============ -->
-    <section id="contact" class="contact-section scroll-mt-20">
+    <!-- ============ ENQUIRY & BOOKINGS ============ -->
+    <span id="contact"></span>
+    <section id="enquiry" class="contact-section scroll-mt-20">
       <div class="contact-inner reveal">
-        <div class="section-label">Contact &amp; Bookings</div>
-        <h2 class="section-title">Let's create <em>together</em></h2>
+        <div class="section-label">Shoot Enquiry &amp; Bookings</div>
+        <h2 class="section-title">Let's Plan Your <em>Session</em></h2>
         <p class="section-sub">
-          Fill in your details and send your inquiry directly via WhatsApp, Instagram, or Facebook.
+          Have an upcoming campaign, match, wedding, or portrait session? Fill in your details below to discuss creative direction, availability, and custom packages.
         </p>
+
+        <!-- Enquiry Perks Row -->
+        <div class="enquiry-perks-row">
+          <div class="enquiry-perk">
+            <span class="perk-icon">⚡</span>
+            <div class="perk-info">
+              <strong>Prompt Response</strong>
+              <span>Replies within 24 hours</span>
+            </div>
+          </div>
+          <div class="enquiry-perk">
+            <span class="perk-icon">📍</span>
+            <div class="perk-info">
+              <strong>Malta &amp; International</strong>
+              <span>On-location or studio</span>
+            </div>
+          </div>
+          <div class="enquiry-perk">
+            <span class="perk-icon">🎞️</span>
+            <div class="perk-info">
+              <strong>Master Delivery</strong>
+              <span>Full color-graded gallery</span>
+            </div>
+          </div>
+        </div>
 
         <form class="contact-form" (submit)="$event.preventDefault()" novalidate>
           <div class="form-row">
@@ -378,7 +567,8 @@
         <button (click)="scrollTo('home')">Home</button>
         <button (click)="navigateToCategory('all')">Gallery</button>
         <button (click)="scrollTo('lab')">Photo Lab</button>
-        <button (click)="scrollTo('contact')">Contact</button>
+        <button (click)="scrollTo('reviews')">Reviews &amp; Feedback</button>
+        <button (click)="scrollTo('enquiry')">Enquiry</button>
       </nav>
       <div class="footer-socials">
         <a [href]="'https://wa.me/' + contact.whatsapp" target="_blank" rel="noopener"

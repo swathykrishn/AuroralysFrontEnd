@@ -30,6 +30,74 @@ export interface InquiryForm {
   message: string;
 }
 
+export interface ClientReview {
+  id: string;
+  name: string;
+  roleOrShoot: string;
+  category: Category;
+  rating: number;
+  date: string;
+  comment: string;
+  avatarBg: string;
+  initials: string;
+  verified: boolean;
+}
+
+export const REVIEWS: ClientReview[] = [
+  {
+    id: 'rev-01',
+    name: 'Elena Vassallo',
+    roleOrShoot: 'Creative Director · Valletta Haute Couture',
+    category: 'fashion',
+    rating: 5,
+    date: 'March 2026',
+    comment:
+      'Auroralys captured our high-fashion Valletta campaign with cinematic poise. The lighting, fabric movement, and editorial color grade exceeded every benchmark. Our team and international press were blown away.',
+    avatarBg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    initials: 'EV',
+    verified: true,
+  },
+  {
+    id: 'rev-02',
+    name: 'Matthew Mizzi',
+    roleOrShoot: "Media Officer · Ta' Qali Football League",
+    category: 'sports',
+    rating: 5,
+    date: 'February 2026',
+    comment:
+      'High-speed floodlit action is unforgiving, but every tackle, flighted save, and celebration was captured with pinpoint sharpness. Auroralys has an instinctive eye for peak athletic drama.',
+    avatarBg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    initials: 'MM',
+    verified: true,
+  },
+  {
+    id: 'rev-03',
+    name: 'Sarah & Julian Grech',
+    roleOrShoot: 'Corinthia Palace Wedding & Celebration',
+    category: 'event',
+    rating: 5,
+    date: 'January 2026',
+    comment:
+      'Our wedding album is nothing short of breathtaking. From the quiet black-and-white moments on the marble staircase to the energy of the reception, every emotion was preserved with timeless elegance.',
+    avatarBg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    initials: 'SG',
+    verified: true,
+  },
+  {
+    id: 'rev-04',
+    name: 'Dr. Kasia Nowak',
+    roleOrShoot: 'Editorial Portrait & Personal Branding',
+    category: 'portraits',
+    rating: 5,
+    date: 'October 2025',
+    comment:
+      'I rarely feel comfortable in front of a camera, but Auroralys created an atmosphere of effortless confidence. The natural golden light around Mdina resulted in the most authentic portraits I have ever had.',
+    avatarBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    initials: 'KN',
+    verified: true,
+  },
+];
+
 export const PHOTOS: PhotoItem[] = [
   {
     id: 'fashion-valletta-01',
